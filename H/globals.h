@@ -32,6 +32,7 @@
 #ifndef _GLOBALS_H_INCLUDED
 #define _GLOBALS_H_INCLUDED
 
+#define FILENAME_MAX 144
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

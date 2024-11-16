@@ -43,6 +43,9 @@
 #include "proc.h"
 #include "input.h"
 
+extern int _memicmp( const void *in_s1, const void *in_s2, size_t len );
+
+
 #if defined(__WATCOMC__) && !defined(__FLAT__)
 #define HASH_MAGNITUDE 12  /* for 16bit model */
 #else
