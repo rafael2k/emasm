@@ -8,9 +8,9 @@
 *
 ****************************************************************************/
 
-//#if defined(__UNIX__) && ( defined(__GNUC__) || defined(__TINYC__) )
-//    #include <sys/mman.h>
-//#endif
+#if defined(__UNIX__) && ( defined(__GNUC__) || defined(__TINYC__) )
+    #include <sys/mman.h>
+#endif
 
 #include "globals.h"
 #include "memalloc.h"

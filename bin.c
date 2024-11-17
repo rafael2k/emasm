@@ -183,7 +183,7 @@ static const struct IMAGE_PE_HEADER64 pe64def = {
 
 #ifdef __I86__
 /* "huge" fwrite() for JWasmr.exe */
-uint_32 hfwrite( uint_8 *pBuffer, int size, uint_32 count, FILE *file )
+uint_32 hfwrite( uint_8 huge *pBuffer, int size, uint_32 count, FILE *file )
 /**************************************************************************/
 {
     uint_32 written;

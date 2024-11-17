@@ -291,8 +291,7 @@ struct seg_info {
         uint_32         start_offset;   /* BIN: start offset in group */
     };
 #ifdef __I86__
-//    uint_8 huge         *CodeBuffer;
-    uint_8              *CodeBuffer;
+    uint_8 huge         *CodeBuffer;
 #else
     uint_8              *CodeBuffer;
 #endif

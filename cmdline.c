@@ -58,8 +58,7 @@
 #endif
 
 #ifdef __I86__
-// #define OPTQUAL __near
-#define OPTQUAL
+#define OPTQUAL __near
 #else
 #define OPTQUAL
 #endif
