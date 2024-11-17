@@ -35,7 +35,7 @@ WINBASEAPI void    WINAPI WideCharToMultiByte( uint_32, uint_32, uint_16 *, uint
 
 #ifdef __I86__
 
-//#include <i86.h>
+#include <i86.h>
 #define FPTR( x ) MK_FP( FP_SEG( TX_MSG_USAGE ), x )
 #undef pick
 #define pick( code, string )  const char __based( __segname("_CODE") ) TX_ ## code[] = string;
