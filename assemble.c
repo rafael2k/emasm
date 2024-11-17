@@ -67,6 +67,8 @@ jmp_buf jmpenv;
 
 #define USELSLINE 1 /* must match switch in listing.c! */
 
+unsigned char _HShift = 12;
+
 //#define ASM_EXT "asm"
 #ifdef __UNIX__
 #define OBJ_EXT "o"
