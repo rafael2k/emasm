@@ -109,7 +109,7 @@ struct qdesc            LinnumQueue;    /* queue of line_num_info items */
 bool write_to_file;     /* write object module */
 
 
-#if 1
+#if 0
 /* for OW, it would be good to remove the CharUpperA() emulation
  * implemented in apiemu.c. Unfortunately, OW isn't happy with
  * a local, simple version of _strupr() - it still wants to
