@@ -49,7 +49,7 @@
 #include "input.h"
 #include "linnum.h"
 
-#define TRUNCATE 1
+#define TRUNCATE 0
 #define MULTIHDR 1     /* write muliple THEADR records (Masm compatible) */
 #define WRITEIMPDEF 0  /* write IMPDEF coment records for OPTION DLLIMPORT */
 
