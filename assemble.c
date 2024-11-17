@@ -10,6 +10,8 @@
 
 #include <ctype.h>
 #include <time.h>
+#include <unistd.h>
+#include <malloc.h>
 
 #include "globals.h"
 #include "memalloc.h"
@@ -104,7 +106,7 @@ struct qdesc            LinnumQueue;    /* queue of line_num_info items */
 bool write_to_file;     /* write object module */
 
 
-#if 0
+#if 1
 /* for OW, it would be good to remove the CharUpperA() emulation
  * implemented in apiemu.c. Unfortunately, OW isn't happy with
  * a local, simple version of _strupr() - it still wants to
@@ -434,7 +436,7 @@ static void add_cmdline_tmacros( void )
             value = name + strlen( name ); /* use the terminating NULL */
         } else {
             len = value - name;
-            name = (char *)myalloca( len + 1 );
+            name = (char *)alloca( len + 1 );
             memcpy( name, p->value, len );
             *(name + len) = NULLC;
             value++;
@@ -489,7 +491,7 @@ static void CmdlParamsInit( int pass )
         char *p;
 
         _strupr( Options.build_target );
-        tmp = myalloca( strlen( Options.build_target ) + 5 ); /* null + 4 uscores */
+        tmp = alloca( strlen( Options.build_target ) + 5 ); /* null + 4 uscores */
         strcpy( tmp, uscores );
         strcat( tmp, Options.build_target );
         strcat( tmp, uscores );
@@ -1045,7 +1047,7 @@ static void get_os_include( void )
 
     /* add OS_include to the include path */
 
-    tmp = myalloca( strlen( Options.build_target ) + 10 );
+    tmp = alloca( strlen( Options.build_target ) + 10 );
     strcpy( tmp, Options.build_target );
     strcat( tmp, "_INCLUDE" );
 
@@ -1202,7 +1204,7 @@ void close_files( void )
     /* delete the object module if errors occured */
     if ( Options.syntax_check_only == FALSE &&
         ModuleInfo.g.error_count > 0 ) {
-        remove( CurrFName[OBJ] );
+        unlink( CurrFName[OBJ] );
     }
 
     if( CurrFile[LST] != NULL ) {
@@ -1216,7 +1218,7 @@ void close_files( void )
         CurrFile[ERR] = NULL;
     } else if ( CurrFName[ERR] )
         /* nothing written, delete any existing ERR file */
-        remove( CurrFName[ERR] );
+        unlink( CurrFName[ERR] );
     return;
 }
 
@@ -1383,13 +1385,14 @@ static void AssembleFini( void )
 
 /* AssembleModule() assembles one source file */
 
+
 int EXPQUAL AssembleModule( const char *source )
 /**********************************************/
 {
     uint_32       prev_written = -1;
     uint_32       curr_written;
-    int           starttime;
-    int           endtime;
+    time_t           starttime;
+    time_t           endtime;
     struct dsym   *seg;
 
     DebugMsg(("AssembleModule(\"%s\") enter\n", source ));
@@ -1410,7 +1413,7 @@ int EXPQUAL AssembleModule( const char *source )
 
     AssembleInit( source );
 
-    starttime = clock();
+    starttime = time(NULL);
 
 #if 0 /* 1=trigger a protection fault */
     seg = NULL;
@@ -1503,13 +1506,13 @@ int EXPQUAL AssembleModule( const char *source )
     /* Write a symbol listing file (if requested) */
     LstWriteCRef();
 
-    endtime = clock(); /* is in ms already */
+    endtime = time(NULL); /* is in ms already */
 
     sprintf( CurrSource, MsgGetEx( MSG_ASSEMBLY_RESULTS ),
              GetFName( ModuleInfo.srcfile )->fname,
              GetLineNumber(),
              Parse_Pass + 1,
-             endtime - starttime,
+             (endtime - starttime) * 1000,
              ModuleInfo.g.warning_count,
              ModuleInfo.g.error_count);
     if ( Options.quiet == FALSE )
