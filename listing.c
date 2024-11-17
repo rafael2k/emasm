@@ -10,6 +10,8 @@
 
 #include <stdarg.h>
 #include <ctype.h>
+#include <malloc.h>
+#include <alloca.h>
 
 #include "globals.h"
 #include "memalloc.h"

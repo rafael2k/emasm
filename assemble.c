@@ -11,6 +11,8 @@
 #include <ctype.h>
 #include <time.h>
 #include <unistd.h>
+#include <malloc.h>
+#include <alloca.h>
 
 #include "globals.h"
 #include "memalloc.h"
