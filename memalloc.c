@@ -146,6 +146,33 @@ extern _trmem_hdl   hTrmem;
 
 #endif
 
+#define MAX_NEAR_ALLOC  1024UL  /* max size to allocate from near heap */
+
+void __far *memalloc(unsigned long size)
+{
+    char *p;
+    char __far *fp;
+
+    if (size <= MAX_NEAR_ALLOC) {
+        p = malloc((unsigned int)size);
+        if (p)
+            return (void __far *)p;
+    }
+    fp = fmemalloc(size);
+    return fp;
+}
+
+#define SEGMENT(ptr)    ((unsigned long)(char __far *)(ptr) >> 16)
+
+void memfree(void __far *ptr)
+{
+    if (SEGMENT(ptr) == SEGMENT(&ptr)) {    /* near pointer */
+        free((char *)ptr);
+    } else {
+        fmemfree(ptr);
+    }
+}
+
 void MemInit( void )
 /******************/
 {
@@ -204,7 +231,7 @@ void *LclAlloc( size_t size )
 
 #else /* ! FASTMEM */
 
-    ptr = malloc( size );
+    ptr = memalloc( size );
 #ifdef TRMEM
     DebugMsg1(("LclAlloc(0x%X)=%p cnt=%" I32_SPEC "u\n", size, ptr, ++memcalls ));
 #endif
@@ -223,7 +250,7 @@ void LclFree( void *ptr )
 #ifdef TRMEM
         DebugMsg1(("LclFree(0x%p) cnt=%" I32_SPEC "u\n", ptr, --memcalls ));
 #endif
-        free( ptr );
+        memfree( ptr );
     }
 }
 #endif
@@ -232,7 +259,7 @@ void *MemAlloc( size_t size )
 /***************************/
 {
     void        *ptr;
-    ptr = malloc( size );
+    ptr = memalloc( size );
     DebugMsg1(("MemAlloc(0x%X)=%p cnt=%" I32_SPEC "u\n", size, ptr, ++memcalls ));
     if( ptr == NULL ) {
         Fatal( OUT_OF_MEMORY );
@@ -245,7 +272,7 @@ void MemFree( void *ptr )
 /***********************/
 {
     DebugMsg1(("MemFree(0x%p) cnt=%" I32_SPEC "u\n", ptr, --memcalls ));
-    free( ptr );
+    memfree( ptr );
     return;
 }
 
