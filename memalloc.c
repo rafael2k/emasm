@@ -15,6 +15,71 @@
 #include "globals.h"
 #include "memalloc.h"
 
+#ifdef __ELKS__
+#define MAX_NEAR_ALLOC  128U   /* max size to allocate from near heap */
+
+#define SEGMENT(ptr)    ((unsigned long)(char __far *)(ptr) >> 16)
+
+void __far *memalloc(unsigned long size)
+{
+	char *p;
+	char __far *fp;
+	if (size <= MAX_NEAR_ALLOC)
+	{
+		p = malloc((unsigned int)size);
+		if (p == NULL)
+			return (void __far *)p;
+	}
+	fp = fmemalloc(size);
+	return fp;
+}
+#else
+void *memalloc(unsigned long size)
+{
+	return malloc(size);
+}
+#endif
+
+#ifdef __ELKS__
+void memfree(void __far *ptr)
+{
+	if (ptr == 0)
+		return;
+	if (SEGMENT(ptr) == SEGMENT(&ptr)) /* near pointer */
+	{
+		free((char *)ptr);
+	} else
+	{
+		fmemfree(ptr);
+	}
+}
+#else
+void memfree(void *ptr)
+{
+	free(ptr);
+}
+#endif
+
+#ifdef __ELKS__
+void __far *memrealloc(void __far *ptr, unsigned long size)
+{
+	void __far *new;
+	if (!ptr)
+		return memalloc(size);
+	new = memalloc(size);
+	if (!new)
+		return NULL;            /* previous memory not freed */
+	memcpy(new, ptr, size);    /* FIXME copies too much!! */
+	memfree(ptr);
+	return new;
+}
+#else
+void *memrealloc(void *ptr, unsigned long size)
+{
+	return realloc(ptr, size);
+}
+#endif
+
 /* what items are stored in the heap?
  * - symbols + symbol names ( asym, dsym; symbol.c )
  * - macro lines ( StoreMacro(); macro.c )
@@ -136,7 +201,7 @@ static uint_32 memcalls = 0;
 static uint_32 memstart;
 #endif
 
-#ifdef TRMEM /* track memory allocation? */
+#ifdef TRMEM  /* track memory allocation? */
 
 #include "trmem.h"
 
@@ -145,33 +210,6 @@ extern _trmem_hdl   hTrmem;
 #define free( x )   _trmem_free( x, _trmem_guess_who( &x ), hTrmem )
 
 #endif
-
-#define MAX_NEAR_ALLOC  1024UL  /* max size to allocate from near heap */
-
-void __far *memalloc(unsigned long size)
-{
-    char *p;
-    char __far *fp;
-
-    if (size <= MAX_NEAR_ALLOC) {
-        p = malloc((unsigned int)size);
-        if (p)
-            return (void __far *)p;
-    }
-    fp = fmemalloc(size);
-    return fp;
-}
-
-#define SEGMENT(ptr)    ((unsigned long)(char __far *)(ptr) >> 16)
-
-void memfree(void __far *ptr)
-{
-    if (SEGMENT(ptr) == SEGMENT(&ptr)) {    /* near pointer */
-        free((char *)ptr);
-    } else {
-        fmemfree(ptr);
-    }
-}
 
 void MemInit( void )
 /******************/
@@ -259,7 +297,9 @@ void *MemAlloc( size_t size )
 /***************************/
 {
     void        *ptr;
+    //printf("mem alloc size: %d ", size);
     ptr = memalloc( size );
+    //printf("address: %p END\n", ptr);
     DebugMsg1(("MemAlloc(0x%X)=%p cnt=%" I32_SPEC "u\n", size, ptr, ++memcalls ));
     if( ptr == NULL ) {
         Fatal( OUT_OF_MEMORY );
@@ -272,7 +312,9 @@ void MemFree( void *ptr )
 /***********************/
 {
     DebugMsg1(("MemFree(0x%p) cnt=%" I32_SPEC "u\n", ptr, --memcalls ));
+    //printf("mem free address: %p", ptr);
     memfree( ptr );
+    //printf(" END\n");
     return;
 }
 
@@ -282,7 +324,7 @@ void *MemRealloc( void *ptr, size_t size )
 {
     void *new;
 
-    new = realloc( ptr, size );
+    new = memrealloc( ptr, size );
     if( new == NULL && size != 0 ) {
         Fatal( OUT_OF_MEMORY );
     }

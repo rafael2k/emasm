@@ -15,6 +15,8 @@
 #include "cmdline.h"
 #include "input.h" /* GetFNamePart() */
 
+#define CATCHBREAK 0
+
 #if defined(__UNIX__) || defined(__CYGWIN__) || defined(__DJGPP__)
 
 #define WILDCARDS 0
@@ -23,11 +25,7 @@
 #else
 
 #define WILDCARDS 1
-#ifdef __POCC__
-#define CATCHBREAK 0
-#else
-#define CATCHBREAK 1
-#endif
+
 
 #endif
 
@@ -44,19 +42,6 @@
 void tm_Init( void );
 void tm_Fini( void );
 #endif
-
-static void genfailure( int signo )
-/*********************************/
-{
-#if CATCHBREAK
-    if (signo != SIGBREAK)
-#else
-    if (signo != SIGTERM)
-#endif
-        EmitError( GENERAL_FAILURE );
-    close_files();
-    exit( EXIT_FAILURE );
-}
 
 int main( int argc, char **argv )
 /*******************************/
@@ -92,14 +77,11 @@ int main( int argc, char **argv )
         pEnv = "";
     argv[0] = pEnv;
 
-#ifndef DEBUG_OUT
-    signal(SIGSEGV, genfailure);
-#endif
 
 #if CATCHBREAK
     signal(SIGBREAK, genfailure);
-#else
-    signal(SIGTERM, genfailure);
+//#else
+//    signal(SIGTERM, genfailure);
 #endif
 
     /* ParseCmdLine() returns NULL if no source file name has been found (anymore) */

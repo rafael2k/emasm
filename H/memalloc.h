@@ -42,6 +42,7 @@ extern void MemFree( void *ptr );
 /* add these declarations to a JWasm header that's included for all MemAlloc allocations */
 void __far *memalloc(unsigned long size);
 void memfree(void __far *ptr);
+void __far *memrealloc(void __far *ptr, unsigned long size);
 
 #define myalloca  alloca
 #include <malloc.h>
